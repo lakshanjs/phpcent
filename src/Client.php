@@ -2,6 +2,8 @@
 
 namespace phpcent;
 
+use Ramsey\Uuid\Uuid;
+
 /**
  * Centrifugo API Client
  *
@@ -295,17 +297,6 @@ class Client
     }
 
     /**
-     * Sending many commands in one request
-     *
-     * @param array $data
-     * @return mixed
-     */
-    public function batch(array $data)
-    {
-        return $this->send('batch', $data);
-    }
-
-    /**
      * Generate connection JWT. See https://centrifugal.dev/docs/server/authentication.
      * Keep in mind that this method does not support all claims of Centrifugo JWT connection
      * token at this point. You can use any JWT library to generate Centrifugo tokens.
@@ -320,7 +311,17 @@ class Client
     public function generateConnectionToken($userId, $exp = 0, $info = array(), $channels = array(), $meta = array())
     {
         $header = array('typ' => 'JWT', 'alg' => 'HS256');
-        $payload = array('sub' => (string) $userId);
+        
+        // Generate a unique `jti`
+        $jti = Uuid::uuid4()->toString();
+
+        // Payload
+        $payload = array(
+            'sub' => (string) $userId,
+            'jti' => $jti // Add jti here
+        );
+        
+                
         if (!empty($info)) {
             $payload['info'] = $info;
         }
@@ -475,4 +476,15 @@ class Client
 
         return $headers;
     }
+
+    public function get_user_status($users=array())
+    {
+        return $this->send('get_user_status', $users);
+    }
+
+    public function connections($user)
+    {
+        return $this->send('connections', array("user"=>$user));
+    }
+    
 }
