@@ -486,5 +486,9 @@ class Client
     {
         return $this->send('connections', array("user"=>$user));
     }
-    
+
+    public function revoke_token($jti)
+    {
+        return $this->send('revoke_token', array("uid"=>$jti));
+    }
 }
